@@ -2,8 +2,9 @@
 import * as LitJsSdk from 'lit-js-sdk'
 
 export async function encrypt_string() {
-  const chain = 'fantom'
-  console.log('fantom encryptions ')
+  // using eth here b/c fortmatic
+  const chain = 'ethereum'
+  console.log('eth encryptions ')
   const aStringThatYouWishToEncrypt = 'this is my secret, hold if for me please'
   let authSign = await LitJsSdk.checkAndSignAuthMessage({
     chain: chain,

@@ -7,8 +7,12 @@ import { createIDX } from './idx'
 import { getProvider } from './wallet'
 import type { ResolverRegistry } from 'did-resolver'
 // import { encrypt_string } from 'lit-js-sdk'
-
 import { TileDocument } from '@ceramicnetwork/stream-tile'
+
+// To Do:
+// - Connect Read and Write, such that user can do both on the same stream
+// - fix up Encrypt and Decrypt to work in typescript and in this format
+// - decrypt error regarding type
 
 declare global {
   interface Window {
@@ -17,6 +21,32 @@ declare global {
 }
 
 const ceramicPromise = createCeramic()
+
+const writeCeramic = async (auth: any[]): Promise<String> => {
+  if (auth) {
+    console.log('write ceramic.. ', auth)
+    const authReturn = auth
+    // const id = authReturn[0]
+    const ceramic = authReturn[1]
+
+    const doc = await TileDocument.create(
+      ceramic,
+      { foo: 'barto' },
+      {
+        // controllers: [concatId],
+        family: 'doc family',
+      }
+    )
+
+    return doc.id.toString()
+  } else {
+    console.error('Failed to authenticate in ceramic read')
+    updateAlert('danger', 'danger in reading of ceramic')
+    return 'whoopsies'
+  }
+}
+
+// const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain: 'ethereum' })
 
 const authenticate = async (): Promise<Array<any>> => {
   const [ceramic, provider] = await Promise.all([ceramicPromise, getProvider()])
@@ -33,7 +63,7 @@ const authenticate = async (): Promise<Array<any>> => {
 
   const doc = TileDocument.create(
     ceramic,
-    { foo: 'bart' },
+    { foo: 'el barto' },
     {
       // controllers: [concatId],
       family: 'doc family',
@@ -55,7 +85,6 @@ const readCeramic = async (auth: any[]): Promise<string> => {
   if (auth) {
     console.log('reading ceramic.. ', auth)
     const authReturn = auth
-    const id = authReturn[0]
     const ceramic = authReturn[1]
 
     const streamId = 'kjzl6cwe1jw146fgws1ijke5i3m2c9jqtz4cmirj3cepebj2tn1q884db5xi2fx'
@@ -132,40 +161,19 @@ document.getElementById('writeCeramic')?.addEventListener('click', () => {
   )
 })
 
-// document.getElementById('readCeramic')?.addEventListener('click', () => {
-//   authenticate().then(
-//     (id) => {
-//       const userDid = document.getElementById('userDID')
-//       const concatId = id.split('did:3:')[1]
-//       if (userDid !== null) {
-//         userDid.textContent = `${concatId.slice(0, 4)}...${concatId.slice(
-//           concatId.length - 4,
-//           concatId.length
-//         )}`
-//       }
-//       console.log(concatId)
-//       // const [ceramic, provider] = await Promise.all([ceramicPromise, getProvider()])
+document.getElementById('writeCeramic')?.addEventListener('click', () => {
+  authenticate().then((authReturn) => {
+    console.log('writing to ceramic and creating tiledoc..')
 
-//       updateAlert('success', `Successfully connected with ${id}`)
-//     },
-//     (err) => {
-//       console.error('Failed to authenticate:', err)
-//       updateAlert('danger', err)
-//     }
-//   )
-// })
+    const itIsWritten = writeCeramic(authReturn)
+    console.log('what was written: ', itIsWritten)
+    updateAlert('success', `Successful Read of Stream: ${itIsWritten}`)
+  })
+})
 
 document.getElementById('encryptLit')?.addEventListener('click', () => {
   console.log('we are here..')
-  // const userDid = document.getElementById('userDID')
-  // const concatId = id.split('did:3:')[1]
-  // if (userDid !== null) {
-  //   userDid.textContent = `${concatId.slice(0, 4)}...${concatId.slice(
-  //     concatId.length - 4,
-  //     concatId.length
-  //   )}`
-  // }
-  // console.log(concatId)
+
   // encrypt_string()
   console.log('+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=')
 
