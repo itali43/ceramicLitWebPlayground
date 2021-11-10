@@ -51,23 +51,22 @@ const authenticate = async (): Promise<Array<any>> => {
   return [idx.id, ceramic]
 }
 
-const decryptLit = async (authReturn: Promise<Array<any>>): Promise<string> => {
-  if (authReturn) {
-    console.log('decrypting..')
-
+const readCeramic = async (auth: any[]): Promise<string> => {
+  if (auth) {
+    console.log('reading ceramic.. ', auth)
+    const authReturn = auth
     const id = authReturn[0]
-    console.log(authReturn[0])
-    console.log(authReturn)
     const ceramic = authReturn[1]
-    console.log('outputs: ', id, ' =:= ', ceramic)
-    const streamId = 'kjzl6cwe1jw146fgws1ijke5i3m2c9jqtz4cmirj3cepebj2tn1q884db5xi2fx'
-    // const stream = await ceramic.loadStream(streamId)
-  } else {
-    console.error('Failed to authenticate in decrypt')
-    updateAlert('danger', 'danger in decrypt')
-  }
 
-  return authReturn[0]
+    const streamId = 'kjzl6cwe1jw146fgws1ijke5i3m2c9jqtz4cmirj3cepebj2tn1q884db5xi2fx'
+    const stream = await ceramic.loadStream(streamId)
+
+    return stream.content
+  } else {
+    console.error('Failed to authenticate in ceramic read')
+    updateAlert('danger', 'danger in reading of ceramic')
+    return 'error'
+  }
 }
 
 const updateAlert = (status: string, message: string) => {
@@ -173,19 +172,12 @@ document.getElementById('encryptLit')?.addEventListener('click', () => {
   updateAlert('success', `Successfully Ecrypted`)
 })
 
-document.getElementById('decryptLit')?.addEventListener('click', () => {
+document.getElementById('readCeramic')?.addEventListener('click', () => {
   authenticate().then((authReturn) => {
-    console.log('decrypting..')
+    console.log('reading ceramic stream..')
 
-    const id = authReturn[0]
-    console.log(authReturn[0])
-    console.log(authReturn)
-    const ceramic = authReturn[1]
-    console.log('outputs: ', id, ' =:= ', ceramic)
-    const streamId = 'kjzl6cwe1jw146fgws1ijke5i3m2c9jqtz4cmirj3cepebj2tn1q884db5xi2fx'
-    // const stream = await ceramic.loadStream(streamId)
-
-    updateAlert('success', `Successful decrypt: ${streamId}`)
+    const read = readCeramic(authReturn)
+    updateAlert('success', `Successful Read of Stream: ${read}`)
   })
 })
 
