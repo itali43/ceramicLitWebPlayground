@@ -134,12 +134,20 @@
           <a href="https://ceramic.network" target="_blank">Ceramic Network</a> components in a web
           browser.
         </p>
+        <form>
+          <br />
+          <label for="fname">Secret:</label>
+          <input type="text" id="secret" name="secret" value="Type Secret Here!" /><br />
+        </form>
       </header>
+
       <main class="container center">
         <div class="row">
           <div class="col-xs-12 space-around">
-            <div class="btn btn-default ceramic-btn" id="activate_ceramic">Ceramic Docs</div>
-            <div class="btn btn-default idx-btn" id="activate_idx">IDX Docs</div>
+            <!-- <input type="text" id="streamid" name="streamid" /> -->
+            <br />
+            <br />
+            <div id="stream"></div>
           </div>
           <div class="col-xs-12 col-lg-6">
             <iframe
@@ -157,6 +165,19 @@
             ></iframe>
           </div>
         </div>
+
+        <div id="encryptLit">
+          <button
+            id="encryptLit"
+            type="button"
+            class="btn btn-primary center"
+            style="display: inherit; margin: 20px auto"
+          >
+            <!-- <div id="loader" class="loader hide"></div> -->
+            Encrypt w/ Lit
+          </button>
+        </div>
+
         <div id="writeCeramic">
           <button
             id="writeCeramic"
@@ -168,6 +189,7 @@
             Write To Ceramic
           </button>
         </div>
+        <!-- Below DIV will show the read ceramic.-->
         <div id="readCeramic">
           <button
             id="readCeramic"
@@ -177,18 +199,6 @@
           >
             <!-- <div id="loader" class="loader hide"></div> -->
             Read To Ceramic
-          </button>
-        </div>
-
-        <div id="encryptLit">
-          <button
-            id="encryptLit"
-            type="button"
-            class="btn btn-primary center"
-            style="display: inherit; margin: 20px auto"
-          >
-            <!-- <div id="loader" class="loader hide"></div> -->
-            Encrypt w/ Lit
           </button>
         </div>
 
@@ -203,6 +213,7 @@
             Decrypt w/ Lit
           </button>
         </div>
+        <div id="decryption"></div>
 
         <!-- <div id="instructions" class="hide">
           <h3>Usage</h3>
@@ -236,5 +247,5 @@
       </button>
     </div>
   </body>
-  <script type="text/javascript" src="dist/app.js"></script>
+  <script type="module" src="src/app.ts"></script>
 </html>

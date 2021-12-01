@@ -10,6 +10,7 @@ export const threeID = new ThreeIdConnect()
 
 export const web3Modal = new Web3Modal({
   network: 'mainnet',
+  disableInjectedProvider: false,
   cacheProvider: true,
   providerOptions: {
     walletconnect: {
@@ -37,3 +38,10 @@ export async function getProvider(): Promise<DIDProvider> {
   await threeID.connect(new EthereumAuthProvider(ethProvider, addresses[0]))
   return threeID.getDidProvider()
 }
+
+// export async function getAuthProvider(): Promise<DIDProvider> {
+//   const ethProvider = await web3Modal.connect()
+//   const addresses = await ethProvider.enable()
+//   await threeID.connect(new EthereumAuthProvider(ethProvider, addresses[0]))
+//   return threeID.getDidProvider()
+// }
