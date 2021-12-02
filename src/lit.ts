@@ -38,7 +38,10 @@ export async function decodeb64(b64String: any) {
   var html = atob(b64String)
   console.log('===> decoded to b64 (Welcome to <b>base64.guru</b>!): ')
   console.log(html)
-  return html
+
+  const htmlwbrack = `[${html}]`
+  console.log(htmlwbrack)
+  return htmlwbrack
   // Since everything is set up, let’s read the Blob and store the result as Data URI
   // reader.readAsDataURL(blob)
 }
@@ -52,7 +55,7 @@ export async function encryptAndWrite(auth: any[], stringToEncrypt: String) {
   console.log('~~--------------------------------~~')
   const encrypted = encryptWithLit(auth, stringToEncrypt)
   console.log(encrypted)
-  const writing = writeToCeramic(auth, encrypted)
+  // writeToCeramic(auth, encrypted)
 }
 
 // -----
@@ -142,11 +145,11 @@ export async function writeToCeramic(auth: any[], encryptedString: String) {
     return doc.id.toString()
   } else {
     console.error('Failed to authenticate in ceramic read')
-    updateAlert('danger', 'danger in reading of ceramic')
+    // updateAlert('danger', 'danger in reading of ceramic')
     return 'whoopsies'
   }
 
-  return writeCeramic
+  // return writeCeramic
 }
 // -----
 
