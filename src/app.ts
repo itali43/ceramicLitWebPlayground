@@ -7,24 +7,39 @@ import { createIDX } from './idx'
 import { getProvider } from './wallet'
 import type { ResolverRegistry } from 'did-resolver'
 // import { encrypt_string } from 'lit-js-sdk'
+// writeceramic
 import { TileDocument } from '@ceramicnetwork/stream-tile'
 
 import * as LitJsSdk from 'lit-js-sdk'
 
+import { encodeb64, decodeb64 } from './lit'
+
 // To Do:
-// - XXXXXXXXX Fix Metamask connection
-// - XXXXXXXXX Connect Read and Write, such that user can do both on the same stream
-// - fix up Encrypt and Decrypt to work in typescript and in this format
-// - decrypt error regarding type (AAC isn't typed correctly iirc)
-// - [low priority] enable input in WEB PLAYGROUND
-// - XXXXXXXXX clean up write so it's given back
+// - Make Encrypt and Decrypt the only commands. (promises and some commentting out)
+// - Modulize
+// - Address litNodeClient.saveEncryptionKey malfunction
+// - Documentation + Blogpost
+// - Notes on good improvements that can be made
 // - Allow for Lit Node (and Ceramic Node?) to be editable
+
+// Cleanup:
+// - clean up auth processes
+// - saveencrypt fix up
+// - clean up input/output
 
 // Expectation:
 // Cleanup and Lit through the week
 // NPMing of this weekend and early next week
 // Next week clean up and finalize
 // next weekend documentation and blog post (tho also done concurrently throughout)
+
+// DONE:
+// - XXXXXXXXX Fix Metamask connection
+// - XXXXXXXXX Connect Read and Write, such that user can do both on the same stream
+// - XXXXXXXXX fix up Encrypt and Decrypt to work in typescript and in this format
+// - XXXXXXXXX [low priority] enable input in WEB PLAYGROUND
+// - XXXXXXXXX clean up write so it's given back
+
 declare global {
   interface Window {
     did?: DID
@@ -36,12 +51,14 @@ let streamID = ''
 let encryptedZipG: any
 let symmetricKeyG: any
 
-const encryptWithLit = async (auth: any[]): Promise<Array<any>> => {
+const encryptWithLit = async (
+  auth: any[],
+  aStringThatYouWishToEncrypt: String
+): Promise<Array<any>> => {
   // using eth here b/c fortmatic
   const chain = 'ethereum'
   console.log('eth encryptions... ', auth)
   // @ts-ignore
-  const aStringThatYouWishToEncrypt = document.getElementById('secret').value
   console.log('secret to encrypt')
   console.log(aStringThatYouWishToEncrypt)
   let authSign = await LitJsSdk.checkAndSignAuthMessage({
@@ -65,9 +82,9 @@ const encryptWithLit = async (auth: any[]): Promise<Array<any>> => {
   ]
 
   // console.log('**********TESTING**********')
-  // console.log('Conditions!  A.C.C. is ', accessControlConditions)
+  console.log('Conditions!  A.C.C. is ', accessControlConditions)
   // console.log('symkey!  SymKey is ', symmetricKey)
-  // console.log('Auth!  AuthSig is ', authSign)
+  console.log('Auth!  AuthSig is ', authSign)
   // console.log('Chain!  chain is ', chain)
   // console.log('Encrypted Zip!  EncryptedZip is ', encryptedZip)
 
@@ -91,7 +108,6 @@ const encryptWithLit = async (auth: any[]): Promise<Array<any>> => {
 
 const decryptWithLit = async (auth: any[]): Promise<String> => {
   // using eth here b/c fortmatic
-  const chain = 'ethereum'
   console.log('eth encryptions... ', auth)
   console.log('decryptor~~~~~~~~~~~~~~~~~~~~~~~~~')
   const decryptedFiles = await LitJsSdk.decryptZip(encryptedZipG, symmetricKeyG)
@@ -99,16 +115,33 @@ const decryptWithLit = async (auth: any[]): Promise<String> => {
   return decryptedString
 }
 
-const writeCeramic = async (auth: any[]): Promise<String> => {
+const encoded = async (toEncode: any): Promise<String> => {
+  // using eth here b/c fortmatic
+  const encode = await encodeb64(toEncode)
+  console.log(encode)
+  return encode
+}
+
+const decoded = async (toDecode: String): Promise<String> => {
+  const decode = await decodeb64(toDecode)
+  return decode
+}
+
+const writeCeramic = async (auth: any[], toBeWritten: any[]): Promise<String> => {
   if (auth) {
-    console.log('write ceramic.. ', auth)
+    // console.log('write ceramic.. ', auth)
     const authReturn = auth
     // const id = authReturn[0]
     const ceramic = authReturn[1]
+    // console.log('!!!!!!!!!!!!!!!!!!')
+    const [zip, sym] = await Promise.all([toBeWritten[0], toBeWritten[1]])
+    // console.log(zip)
+    // console.log(sym)
+    // console.log('!!!!!!!!!!!!!!!!!!')
 
     const doc = await TileDocument.create(
       ceramic,
-      { foo: 'el barto is here' },
+      { encryptedZip: zip, symKey: sym },
       {
         // controllers: [concatId],
         family: 'doc simpsonss family',
@@ -178,30 +211,12 @@ const updateAlert = (status: string, message: string) => {
   }
 }
 
-document.getElementById('activate_ceramic')?.addEventListener('click', () => {
-  const ceramicIframe = document.getElementById('ceramic_docs')
-  if (ceramicIframe?.classList.contains('show')) {
-    ceramicIframe?.classList.remove('show')
-    document.getElementById('activate_ceramic')?.classList.remove('active')
-  } else {
-    document.getElementById('activate_ceramic')?.classList.add('active')
-    ceramicIframe?.classList.add('show')
-  }
-})
+// document.getElementById('writeCeramic')?.addEventListener('click', () => {
+//   console.log('saying hi')
+//   say_hi('whats going on')
+// })
 
-document.getElementById('activate_idx')?.addEventListener('click', () => {
-  const idxIframe = document.getElementById('idx_docs')
-  if (idxIframe?.classList.contains('show')) {
-    idxIframe?.classList.remove('show')
-    document.getElementById('activate_idx')?.classList.remove('active')
-  } else {
-    document.getElementById('activate_idx')?.classList.add('active')
-    idxIframe?.classList.add('show')
-  }
-})
-
-// =============================================
-
+// // good one below
 document.getElementById('writeCeramic')?.addEventListener('click', () => {
   authenticate().then((authReturn) => {
     console.log('writing to ceramic and creating tiledoc..')
@@ -242,16 +257,44 @@ document.getElementById('readCeramic')?.addEventListener('click', () => {
 document.getElementById('encryptLit')?.addEventListener('click', () => {
   authenticate().then((authReturn) => {
     console.log('+=+=+=+=+=+=+=+=+=encrypt+=+=+=+=+=+=+=+=+=+=+=')
+    // @ts-ignore
+    const stringToEncrypt = document.getElementById('secret').value
 
-    const itIsEncrypted = encryptWithLit(authReturn).then(function (response) {
-      encryptedZipG = response[0]
-      symmetricKeyG = response[1]
-      updateAlert('success', `Successfully Encrypted`)
+    const itIsEncrypted = encryptWithLit(authReturn, stringToEncrypt)
+      .then(function (response) {
+        encryptedZipG = response[0]
+        symmetricKeyG = response[1]
+        updateAlert('success', `Successfully Encrypted`)
+        return response
+      })
+      .then(function (zipAndSymKey) {
+        var blob = new Blob(['Welcome to <b>base64.guru</b>!'], { type: 'text/html' })
 
-      // @ts-ignore
-      // document.getElementById('stream').innerText = response.toString()
-      return response
-    })
+        const enZip = encoded(zipAndSymKey[0])
+        const enSymKey = encoded(zipAndSymKey[1])
+
+        // const de = decoded(en)
+        console.log('+=+=+=+=+=+=+=+=+=base64 the Zip and Sim Keys+=+=+=+=+=+=+=+=+=+=+=')
+        console.log(enZip)
+        console.log(enSymKey)
+        console.log('+=+=+=+=+=+=+=+=+=base64 the Zip and Sim Keys+=+=+=+=+=+=+=+=+=+=+=')
+
+        return [enZip, enSymKey]
+      })
+      .then((zipAndSymKeyN64) => {
+        console.log('+=+=+=+=+=+=+=+=+=write to ceramic+=+=+=+=+=+=+=+=+=+=+=')
+        console.log('both in 64: ', zipAndSymKeyN64[0], zipAndSymKeyN64[1])
+
+        const itIsWritten = writeCeramic(authReturn, zipAndSymKeyN64).then(function (response) {
+          // console.log('written to this streamID: ')
+          // console.log(response.toString())
+          streamID = response.toString()
+          updateAlert('success', `Successful Write to streamID: ${response.toString()}`)
+          // @ts-ignore
+          document.getElementById('stream').innerText = response.toString()
+          return response.toString()
+        })
+      })
     console.log(itIsEncrypted)
   })
 })
