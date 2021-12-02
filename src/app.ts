@@ -88,18 +88,19 @@ const encryptWithLit = async (
   // console.log('Chain!  chain is ', chain)
   // console.log('Encrypted Zip!  EncryptedZip is ', encryptedZip)
 
-  console.log('TODO: It seems litNodeClient.saveEncryptionKey is malfunctioning')
-  console.log('Troubleshoot why, seems to be on SDK side?---------------')
-  const encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
-    accessControlConditions,
-    symmetricKey,
-    authSign,
-    chain,
-  })
+  // console.log('TODO: It seems litNodeClient.saveEncryptionKey is malfunctioning')
+  // console.log('Troubleshoot why, seems to be on SDK side?---------------')
+  // const encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
+  //   accessControlConditions,
+  //   symmetricKey,
+  //   authSign,
+  //   chain,
+  // })
 
-  encryptedSymmetricKey.then((value: any) => {
-    console.log('encrypt sym key!  encrypted sym key is ', value)
-  })
+  // promise then + await 
+  // encryptedSymmetricKey.then((value: any) => {
+  //   console.log('encrypt sym key!  encrypted sym key is ', value)
+  // })
 
   console.log('RIGHT HERE RIGHT HERE RIGHT HERE RIGHT HERE RIGHT HERE ')
   console.log(encryptedZip)

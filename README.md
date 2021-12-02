@@ -1,4 +1,18 @@
-# [Ceramic Web Playground](https://ceramicstudio.github.io/web-playground/)
+# Lit Ceramic Integration
+
+### Quick and Dirty Instructions for running in dev
+
+Make sure to run `yarn` to install everything at first.
+
+This is how I've been building it, at least the first time: `npx webpack --hot && yarn parcel index.html`
+
+But normally I just run `yarn parcel index.html`, I don't think the webpack build is absolutely necessary. I know it's not, but I fear change 😜
+
+That should get things running, even though I still have some `/dist` files the html is set up to connect to the `/src`.
+
+# --------------------------------------------------------------------------
+
+## [Ceramic Web Playground](https://ceramicstudio.github.io/web-playground/)
 
 Test the full stack of [Ceramic Network](https://ceramic.network/) components in a web browser.
 
