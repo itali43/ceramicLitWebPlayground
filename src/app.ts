@@ -85,43 +85,35 @@ const encryptWithLit = async (
   const { encryptedZip, symmetricKey } = await LitJsSdk.zipAndEncryptString(
     aStringThatYouWishToEncrypt
   )
-    .then(function (response: any[]) {
-      // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
-      // console.log(response)
-      // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
-      // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
-      // console.log(response[1])
-      // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
 
-      const symmetricKey = response[1]
+  // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
+  // console.log(response)
+  // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
+  // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
+  // console.log(response[1])
+  // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
 
-      const accessControlConditions = [
-        {
-          contractAddress: '0x20598860Da775F63ae75E1CD2cE0D462B8CEe4C7',
-          standardContractType: '',
-          chain: 'ethereum',
-          method: 'eth_getBalance',
-          parameters: [':userAddress', 'latest'],
-          returnValueTest: {
-            comparator: '>=',
-            value: '10000000000000',
-          },
-        },
-      ]
+  const accessControlConditions = [
+    {
+      contractAddress: '0x20598860Da775F63ae75E1CD2cE0D462B8CEe4C7',
+      standardContractType: '',
+      chain: 'ethereum',
+      method: 'eth_getBalance',
+      parameters: [':userAddress', 'latest'],
+      returnValueTest: {
+        comparator: '>=',
+        value: '10000000000000',
+      },
+    },
+  ]
 
-      const encryptedSymmetricKey = window.litNodeClient.saveEncryptionKey({
-        accessControlConditions,
-        symmetricKey,
-        authSign,
-        chain,
-      })
-      console.log('encrypt sym key! ', encryptedSymmetricKey)
-
-      return encryptedSymmetricKey
-    })
-    .then(function (encryptedSymmetricKey: any) {
-      console.log('finished with save encrypt phase: ', encryptedSymmetricKey)
-    })
+  const encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
+    accessControlConditions,
+    symmetricKey,
+    authSig: authSign,
+    chain,
+  })
+  console.log('encrypt sym key! ', encryptedSymmetricKey)
 
   // console.log('**********TESTING**********')
   // console.log('Conditions!  A.C.C. is ', accessControlConditions)
