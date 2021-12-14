@@ -15,12 +15,15 @@ import * as LitJsSdk from 'lit-js-sdk'
 import { encodeb64, decodeb64 } from './lit'
 
 // To Do:
-// - Make Encrypt and Decrypt the only commands. (promises and some commentting out)
+// - Make Encrypt and Decrypt the only commands. (promises and some commenting out)
 // - Modulize
+// - IMPLEMENT DOCUMENTATION.JS! and start documenting
 // - Address litNodeClient.saveEncryptionKey malfunction
 // - Documentation + Blogpost
+// take a look at documentationJS-- (used for API)
 // - Notes on good improvements that can be made
 // - Allow for Lit Node (and Ceramic Node?) to be editable
+// - Access Control Conditions should not be hardcoded
 
 // Cleanup:
 // - clean up auth processes
@@ -61,43 +64,76 @@ const encryptWithLit = async (
   // @ts-ignore
   console.log('secret to encrypt')
   console.log(aStringThatYouWishToEncrypt)
+
+  // const { encryptedZip, symmetricKey } = await LitJsSdk.zipAndEncryptString(
+  //   aStringThatYouWishToEncrypt
+  // ).then((values: any[]) => {
+
+  //   const encryptedSymmetricKey = window.litNodeClient.saveEncryptionKey({
+  //     accessControlConditions,
+  //     symmetricKey,
+  //     authSign,
+  //     chain,
+  //   })
+
+  // }).then((value: any) => {
+  //   console.log('encrypt sym key!  encrypted sym key is ', value)
+  // })
   let authSign = await LitJsSdk.checkAndSignAuthMessage({
     chain: chain,
   })
   const { encryptedZip, symmetricKey } = await LitJsSdk.zipAndEncryptString(
     aStringThatYouWishToEncrypt
   )
-  const accessControlConditions = [
-    {
-      contractAddress: '0x20598860Da775F63ae75E1CD2cE0D462B8CEe4C7',
-      standardContractType: '',
-      chain: 'ethereum',
-      method: 'eth_getBalance',
-      parameters: [':userAddress', 'latest'],
-      returnValueTest: {
-        comparator: '>=',
-        value: '10000000000000',
-      },
-    },
-  ]
+    .then(function (response: any[]) {
+      // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
+      // console.log(response)
+      // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
+      // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
+      // console.log(response[1])
+      // console.log('$$$$----$$$$----$$$$----$$$$----$$$$----$$$$----')
+
+      const symmetricKey = response[1]
+
+      const accessControlConditions = [
+        {
+          contractAddress: '0x20598860Da775F63ae75E1CD2cE0D462B8CEe4C7',
+          standardContractType: '',
+          chain: 'ethereum',
+          method: 'eth_getBalance',
+          parameters: [':userAddress', 'latest'],
+          returnValueTest: {
+            comparator: '>=',
+            value: '10000000000000',
+          },
+        },
+      ]
+
+      const encryptedSymmetricKey = window.litNodeClient.saveEncryptionKey({
+        accessControlConditions,
+        symmetricKey,
+        authSign,
+        chain,
+      })
+      console.log('encrypt sym key! ', encryptedSymmetricKey)
+
+      return encryptedSymmetricKey
+    })
+    .then(function (encryptedSymmetricKey: any) {
+      console.log('finished with save encrypt phase: ', encryptedSymmetricKey)
+    })
 
   // console.log('**********TESTING**********')
-  console.log('Conditions!  A.C.C. is ', accessControlConditions)
+  // console.log('Conditions!  A.C.C. is ', accessControlConditions)
   // console.log('symkey!  SymKey is ', symmetricKey)
-  console.log('Auth!  AuthSig is ', authSign)
+  // console.log('Auth!  AuthSig is ', authSign)
   // console.log('Chain!  chain is ', chain)
   // console.log('Encrypted Zip!  EncryptedZip is ', encryptedZip)
 
   // console.log('TODO: It seems litNodeClient.saveEncryptionKey is malfunctioning')
   // console.log('Troubleshoot why, seems to be on SDK side?---------------')
-  // const encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
-  //   accessControlConditions,
-  //   symmetricKey,
-  //   authSign,
-  //   chain,
-  // })
 
-  // promise then + await 
+  // promise then + await
   // encryptedSymmetricKey.then((value: any) => {
   //   console.log('encrypt sym key!  encrypted sym key is ', value)
   // })
@@ -237,6 +273,14 @@ const updateAlert = (status: string, message: string) => {
 //     console.log(itIsWritten)
 //   })
 // })
+
+document.addEventListener('DOMContentLoaded', function () {
+  // load lit client
+  console.log('Connecting to Lit Node...')
+  const client = new LitJsSdk.LitNodeClient()
+  client.connect()
+  window.litNodeClient = client
+})
 
 document.getElementById('readCeramic')?.addEventListener('click', () => {
   authenticate().then((authReturn) => {
