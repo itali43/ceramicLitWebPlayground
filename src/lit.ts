@@ -7,43 +7,31 @@ export async function say_hi(hi: String) {
 }
 //var blob = new Blob(['Welcome to <b>base64.guru</b>!'], {type: 'text/html'});
 
+/**
+ * This function encodes into base 64.
+ * it's useful for storing symkeys and files in ceramic
+ * @param {blob} input a file or any data
+ * @returns {string} returns a string of b64
+ */
 export async function encodeb64(blob: any) {
-  // let b64 = '-x-'
   console.log('encode to b64')
-  // Define the FileReader which is able to read the contents of Blob
-  // var reader = new FileReader()
-  // // The magic always begins after the Blob is successfully loaded
-  // reader.onload = function () {
-  //   // Since it contains the Data URI, we should remove the prefix and keep only Base64 string
-  //   // @ts-ignore
-  //   b64 = reader.result.replace(/^data:.+;base64,/, '')
-  //   console.log('=============> encoded to b64 (V2VsY29tZSB0byA8Yj5iYXNlNjQuZ3VydTwvYj4h): ')
-  //   console.log(b64) //-> "V2VsY29tZSB0byA8Yj5iYXNlNjQuZ3VydTwvYj4h"
-  // }
   const b64 = btoa(blob)
-  console.log(b64)
-  // Since everything is set up, let’s read the Blob and store the result as Data URI
-  // await reader.readAsDataURL(blob)
   return b64
 }
 
+/**
+ * This function decodes from base 64.
+ * it's useful for decrypting symkeys and files in ceramic
+ * @param {blob} input a b64 string
+ * @returns {string} returns the data as a string
+ */
 export async function decodeb64(b64String: any) {
   console.log('decode from b64: ', b64String)
-  // Define the FileReader which is able to read the contents of Blob
-  // var reader = new FileReader()
-  // The magic always begins after the Blob is successfully loaded
-  // Decode the Base64 string and show result just to make sure that everything is OK
-
-  console.log('@@@@@@@@@@@@@@@@@@@@')
   var html = atob(b64String)
-  console.log('===> decoded to b64 (Welcome to <b>base64.guru</b>!): ')
-  console.log(html)
-
-  const htmlwbrack = `[${html}]`
+  // gets decoded without brackets, so we add some..
+  const htmlwbrack = html
   console.log(htmlwbrack)
   return htmlwbrack
-  // Since everything is set up, let’s read the Blob and store the result as Data URI
-  // reader.readAsDataURL(blob)
 }
 
 // -----

@@ -71,19 +71,27 @@ const encryptWithLit = async (
   return [encryptedZip, symmetricKey]
 }
 
-const decryptWithLit = async (auth: any[], toDecrypt: any[]): Promise<String> => {
+/**
+ * decrypt using the lit protocol
+ * @param {any} auth is the authentication passed via the persons wallet and digested in bauth
+ * @param {Promise<String>} promise with the encrypted files and symmetric key
+ * @returns {Promise<string>} promise with the decrypted string
+ */
+
+const decryptWithLit = async (auth: any[], toDecrypt: Promise<Any>): Promise<String> => {
   console.log('decryptor~~~~~~~~~~~~~~~~~~~~~~~~~')
   console.log(toDecrypt[0])
   // convert back to uint8 array
-  let res = new TextEncoder().encode(toDecrypt[0])
+  let res = new TextEncoder().encode(toDecrypt[0]) // symkey
   console.log('this is your res:::::::::::::::::::')
   console.log(res)
   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-  console.log(toDecrypt[1])
+  console.log(toDecrypt[1]) // encrypted blob
   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
-  const decryptedFiles = await LitJsSdk.decryptZip(toDecrypt[1], res)
+  // encrypted blob, sym key
+  const decryptedFiles = await LitJsSdk.decryptZip(toDecrypt[1], toDecrypt[0])
   const decryptedString = await decryptedFiles['string.txt'].async('text')
   return decryptedString
 }
@@ -191,6 +199,7 @@ document.getElementById('readCeramic')?.addEventListener('click', () => {
           // @ts-ignore
           document.getElementById('stream').innerText = jason
           const enZip = response['symKey']
+          // decoded, not decrypted.. yet
           const deZip = decoded(enZip)
 
           const enSym = response['encryptedZip']
@@ -198,7 +207,8 @@ document.getElementById('readCeramic')?.addEventListener('click', () => {
           return [deZip, deSym]
         })
         .then(function (decryptThis) {
-          // :(
+          // :(     const [zip, sym] = await Promise.all([toBeWritten[0], toBeWritten[1]])
+          console.log(decryptThis)
           const itIsDecrypted = decryptWithLit(authReturn, decryptThis).then(function (response) {
             // @ts-ignore
             document.getElementById('decryption').innerText = response.toString()
@@ -206,7 +216,7 @@ document.getElementById('readCeramic')?.addEventListener('click', () => {
             return response.toString()
           })
           console.log('+++++++++++decrypted below++++++++++')
-          console.log(itIsDecrypted.toString())
+          console.log(itIsDecrypted)
           console.log('+++++++++++decrypted above++++++++++')
         })
 
