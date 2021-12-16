@@ -80,18 +80,19 @@ const encryptWithLit = async (
 
 const decryptWithLit = async (auth: any[], toDecrypt: Promise<Any>): Promise<String> => {
   console.log('decryptor~~~~~~~~~~~~~~~~~~~~~~~~~')
-  console.log(toDecrypt[0])
+  console.log(await toDecrypt[0])
+  console.log('below the decryptor~~~~~~~~~~~~~~~~~~~~~~~~~')
   // convert back to uint8 array
-  let res = new TextEncoder().encode(toDecrypt[0]) // symkey
+  let res = new Uint8Array((await toDecrypt[0]).split(',')) // symkey
   console.log('this is your res:::::::::::::::::::')
   console.log(res)
   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-  console.log(toDecrypt[1]) // encrypted blob
+  console.log(await toDecrypt[1]) // encrypted blob
   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
   console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
   // encrypted blob, sym key
-  const decryptedFiles = await LitJsSdk.decryptZip(toDecrypt[1], toDecrypt[0])
+  const decryptedFiles = await LitJsSdk.decryptZip(await toDecrypt[1], res.buffer)
   const decryptedString = await decryptedFiles['string.txt'].async('text')
   return decryptedString
 }
