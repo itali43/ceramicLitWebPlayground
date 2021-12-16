@@ -7,9 +7,10 @@ import { createIDX } from './idx'
 import { getProvider } from './wallet'
 import type { ResolverRegistry } from 'did-resolver'
 import { TileDocument } from '@ceramicnetwork/stream-tile'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 import * as LitJsSdk from 'lit-js-sdk'
-import { encodeb64, decodeb64 } from './lit'
+import { encodeb64, decodeb64, blobToBase64 } from './lit'
 
 // To Do:
 // - Make Encrypt and Decrypt the only commands. (promises and some commenting out)
@@ -68,7 +69,10 @@ const encryptWithLit = async (
     chain,
   })
 
-  return [encryptedZip, symmetricKey]
+  const encryptedZipBase64 = await blobToBase64(encryptedZip)
+  const encryptedSymmetricKeyBase64 = encodeb64(encryptedSymmetricKey)
+
+  return [encryptedZipBase64, encryptedSymmetricKeyBase64, accessControlConditions, chain]
 }
 
 /**
@@ -78,49 +82,51 @@ const encryptWithLit = async (
  * @returns {Promise<string>} promise with the decrypted string
  */
 
-const decryptWithLit = async (auth: any[], toDecrypt: Promise<Any>): Promise<String> => {
-  console.log('decryptor~~~~~~~~~~~~~~~~~~~~~~~~~')
-  console.log(await toDecrypt[0])
-  console.log('below the decryptor~~~~~~~~~~~~~~~~~~~~~~~~~')
-  // convert back to uint8 array
-  let res = new Uint8Array((await toDecrypt[0]).split(',')) // symkey
-  console.log('this is your res:::::::::::::::::::')
-  console.log(res)
-  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-  console.log(await toDecrypt[1]) // encrypted blob
-  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-  console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-
+const decryptWithLit = async (
+  encryptedZip: Uint8Array,
+  encryptedSymmKey: Uint8Array,
+  accessControlConditions: Array<any>,
+  chain: string
+): Promise<String> => {
+  let authSig = await LitJsSdk.checkAndSignAuthMessage({
+    chain: chain,
+  })
   // encrypted blob, sym key
-  const decryptedFiles = await LitJsSdk.decryptZip(await toDecrypt[1], res.buffer)
+  console.log('encryptedSymKey', encryptedSymmKey)
+  const toDecrypt = uint8ArrayToString(encryptedSymmKey, 'base16')
+  console.log('toDecrypt', toDecrypt)
+  // decrypt the symmetric key
+  const decryptedSymmKey = await window.litNodeClient.getEncryptionKey({
+    accessControlConditions,
+    toDecrypt,
+    chain,
+    authSig,
+  })
+  console.log('decryptedSymKey', decryptedSymmKey)
+
+  // decrypt the files
+  const decryptedFiles = await LitJsSdk.decryptZip(new Blob([encryptedZip]), decryptedSymmKey)
   const decryptedString = await decryptedFiles['string.txt'].async('text')
   return decryptedString
-}
-//!!
-const encoded = async (toEncode: any): Promise<String> => {
-  const encode = await encodeb64(toEncode)
-  return encode
-}
-//!!
-const decoded = async (toDecode: String): Promise<String> => {
-  const decode = await decodeb64(toDecode)
-  return decode
 }
 
 const writeCeramic = async (auth: any[], toBeWritten: any[]): Promise<String> => {
   if (auth) {
     const authReturn = auth
     const ceramic = authReturn[1]
-    const [zip, sym] = await Promise.all([toBeWritten[0], toBeWritten[1]])
 
-    const doc = await TileDocument.create(
-      ceramic,
-      { encryptedZip: zip, symKey: sym },
-      {
-        // controllers: [concatId],
-        family: 'doc family',
-      }
-    )
+    const toStore = {
+      encryptedZip: toBeWritten[0],
+      symKey: toBeWritten[1],
+      accessControlConditions: toBeWritten[2],
+      chain: toBeWritten[3],
+    }
+    console.log('storing to ceramic', toStore)
+
+    const doc = await TileDocument.create(ceramic, toStore, {
+      // controllers: [concatId],
+      family: 'doc family',
+    })
     return doc.id.toString()
   } else {
     console.error('Failed to authenticate in ceramic read')
@@ -185,45 +191,42 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 document.getElementById('readCeramic')?.addEventListener('click', () => {
-  authenticate().then((authReturn) => {
-    if (streamID === '') {
-      console.log(streamID)
-      updateAlert('danger', `Error, please write to ceramic first so a stream can be read`)
-    } else {
-      const read = readCeramic(authReturn, streamID)
-        .then(function (resp) {
-          updateAlert('success', `Successful Read of Stream: ${JSON.stringify(resp.toString())}`)
-          return resp
-        })
-        .then(function (response) {
-          const jason = JSON.stringify(response)
-          // @ts-ignore
-          document.getElementById('stream').innerText = jason
-          const enZip = response['symKey']
-          // decoded, not decrypted.. yet
-          const deZip = decoded(enZip)
+  authenticate()
+    .then((authReturn) => {
+      if (streamID === '') {
+        console.log(streamID)
+        updateAlert('danger', `Error, please write to ceramic first so a stream can be read`)
+      } else {
+        return readCeramic(authReturn, streamID)
+      }
+    })
+    .then(function (response) {
+      updateAlert('success', `Successful Read of Stream: ${JSON.stringify(response)}`)
 
-          const enSym = response['encryptedZip']
-          const deSym = decoded(enSym)
-          return [deZip, deSym]
-        })
-        .then(function (decryptThis) {
-          // :(     const [zip, sym] = await Promise.all([toBeWritten[0], toBeWritten[1]])
-          console.log(decryptThis)
-          const itIsDecrypted = decryptWithLit(authReturn, decryptThis).then(function (response) {
-            // @ts-ignore
-            document.getElementById('decryption').innerText = response.toString()
-            updateAlert('success', `Successfully Decrypted`)
-            return response.toString()
-          })
-          console.log('+++++++++++decrypted below++++++++++')
-          console.log(itIsDecrypted)
-          console.log('+++++++++++decrypted above++++++++++')
-        })
+      const jason = JSON.stringify(response)
+      // @ts-ignore
+      document.getElementById('stream').innerText = jason
+      const enZip = response['encryptedZip']
+      // decoded, not decrypted.. yet
+      const deZip = decodeb64(enZip)
 
-      console.log(read)
-    }
-  })
+      const enSym = response['symKey']
+      const deSym = decodeb64(enSym)
+
+      const accessControlConditions = response['accessControlConditions']
+      const chain = response['chain']
+
+      return decryptWithLit(deZip, deSym, accessControlConditions, chain)
+    })
+    .then(function (response) {
+      // @ts-ignore
+      document.getElementById('decryption').innerText = response.toString()
+      updateAlert('success', `Successfully Decrypted`)
+      return response.toString()
+    })
+    .then((itIsDecrypted) => {
+      console.log('itIsDecrypted', itIsDecrypted)
+    })
 })
 
 // encrypt with Lit and write to ceramic
@@ -233,19 +236,21 @@ document.getElementById('encryptLit')?.addEventListener('click', () => {
     // @ts-ignore
     const stringToEncrypt = document.getElementById('secret').value
 
-    const itIsEncrypted = encryptWithLit(authReturn, stringToEncrypt)
-      .then(function (response) {
-        // confirm encryption with lit was a success
-        updateAlert('success', `Successfully Encrypted`)
-        return response
-      })
-      .then(function (zipAndSymKey) {
-        // encode zip and sym key to prepare for writing to ceramic
-        const enZip = encoded(zipAndSymKey[0])
-        const enSymKey = encoded(zipAndSymKey[1])
-        return [enZip, enSymKey]
-      })
+    encryptWithLit(authReturn, stringToEncrypt)
+      // .then(function (response) {
+      //   // confirm encryption with lit was a success
+      //   updateAlert('success', `Successfully Encrypted`)
+      //   return response
+      // })
+      // .then(function (zipAndSymKey) {
+      //   // encode zip and sym key to prepare for writing to ceramic
+      //   // return value is [encryptedZipBase64, encryptedSymmetricKey]
+      //   const enZip = encoded(zipAndSymKey[0])
+      //   const enSymKey = encoded(zipAndSymKey[1])
+      //   return [enZip, enSymKey]
+      // })
       .then((zipAndSymKeyN64) => {
+        updateAlert('success', `Successfully Encrypted`)
         // write encoded data to ceramic
         writeCeramic(authReturn, zipAndSymKeyN64).then(function (response) {
           streamID = response.toString()
@@ -255,7 +260,9 @@ document.getElementById('encryptLit')?.addEventListener('click', () => {
           return response.toString()
         })
       })
-    console.log(itIsEncrypted)
+      .then((itIsEncrypted) => {
+        console.log(itIsEncrypted)
+      })
   })
 })
 

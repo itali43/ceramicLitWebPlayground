@@ -33,7 +33,7 @@
     "lit-js-sdk": "^1.1.80",
     "multiformats": "~4.6.1",
     "skynet-js": "^4.0.5-beta",
-    "uint8arrays": "^2.1.5",
+    "uint8arrays": "^3.0.0",
     "web3modal": "^1.9.3",
     "webpack-dev-server": "^4.5.0"
   },

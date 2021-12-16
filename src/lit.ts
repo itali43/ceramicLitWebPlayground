@@ -10,13 +10,22 @@ export async function say_hi(hi: String) {
 /**
  * This function encodes into base 64.
  * it's useful for storing symkeys and files in ceramic
- * @param {blob} input a file or any data
+ * @param {Uint8Array} input a file or any data
  * @returns {string} returns a string of b64
  */
-export async function encodeb64(blob: any) {
+export function encodeb64(uintarray: any) {
   console.log('encode to b64')
-  const b64 = Buffer.from(blob).toString('base64')
+  const b64 = Buffer.from(uintarray).toString('base64')
   return b64
+}
+
+export function blobToBase64(blob: Blob) {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader()
+    reader.onloadend = () =>
+      resolve(reader.result.replace('data:application/octet-stream;base64,', ''))
+    reader.readAsDataURL(blob)
+  })
 }
 
 /**
@@ -25,13 +34,8 @@ export async function encodeb64(blob: any) {
  * @param {blob} input a b64 string
  * @returns {string} returns the data as a string
  */
-export async function decodeb64(b64String: any) {
-  console.log('decode from b64: ', b64String)
-  var html = Buffer.from(b64String, 'base64').toString()
-  // gets decoded without brackets, so we add some..
-  const htmlwbrack = html
-  console.log(htmlwbrack)
-  return htmlwbrack
+export function decodeb64(b64String: any) {
+  return new Uint8Array(Buffer.from(b64String, 'base64'))
 }
 
 // -----
