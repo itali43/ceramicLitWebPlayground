@@ -15,7 +15,7 @@ export async function say_hi(hi: String) {
  */
 export async function encodeb64(blob: any) {
   console.log('encode to b64')
-  const b64 = btoa(blob)
+  const b64 = Buffer.from(blob).toString('base64')
   return b64
 }
 
@@ -27,7 +27,7 @@ export async function encodeb64(blob: any) {
  */
 export async function decodeb64(b64String: any) {
   console.log('decode from b64: ', b64String)
-  var html = atob(b64String)
+  var html = Buffer.from(b64String, 'base64').toString()
   // gets decoded without brackets, so we add some..
   const htmlwbrack = html
   console.log(htmlwbrack)
