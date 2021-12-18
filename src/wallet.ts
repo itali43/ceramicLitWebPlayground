@@ -39,9 +39,9 @@ export async function getProvider(): Promise<DIDProvider> {
   return threeID.getDidProvider()
 }
 
-// export async function getAuthProvider(): Promise<DIDProvider> {
-//   const ethProvider = await web3Modal.connect()
-//   const addresses = await ethProvider.enable()
-//   await threeID.connect(new EthereumAuthProvider(ethProvider, addresses[0]))
-//   return threeID.getDidProvider()
-// }
+export async function getAddress(): Promise<String> {
+  const ethProvider = await web3Modal.connect()
+  const addresses = await ethProvider.enable()
+  const addr = addresses[0]
+  return addr
+}

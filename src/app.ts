@@ -4,7 +4,7 @@ import KeyDidResolver from 'key-did-resolver'
 
 import { createCeramic } from './ceramic'
 import { createIDX } from './idx'
-import { getProvider } from './wallet'
+import { getProvider, getAddress } from './wallet'
 import type { ResolverRegistry } from 'did-resolver'
 import { TileDocument } from '@ceramicnetwork/stream-tile'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
@@ -13,7 +13,6 @@ import * as LitJsSdk from 'lit-js-sdk'
 import { encodeb64, decodeb64, blobToBase64 } from './lit'
 
 // To Do:
-// - Make Encrypt and Decrypt the only commands. (promises and some commenting out)
 // - Modulize
 // - Access Control Conditions should not be hardcoded
 // - IMPLEMENT DOCUMENTATION.JS! and start documenting
@@ -136,7 +135,14 @@ const writeCeramic = async (auth: any[], toBeWritten: any[]): Promise<String> =>
 }
 
 const authenticate = async (): Promise<Array<any>> => {
-  const [ceramic, provider] = await Promise.all([ceramicPromise, getProvider()])
+  const [ceramic, provider, address] = await Promise.all([
+    ceramicPromise,
+    getProvider(),
+    getAddress(),
+  ])
+
+  console.log('get address: ', address)
+
   const keyDidResolver = KeyDidResolver.getResolver()
   const threeIdResolver = ThreeIdResolver.getResolver(ceramic)
   const resolverRegistry: ResolverRegistry = {
@@ -153,7 +159,7 @@ const authenticate = async (): Promise<Array<any>> => {
   await ceramic.setDID(did)
   const idx = createIDX(ceramic)
   window.did = ceramic.did
-  return [idx.id, ceramic]
+  return [idx.id, ceramic, address]
 }
 
 const readCeramic = async (auth: any[], streamId: String): Promise<string> => {
