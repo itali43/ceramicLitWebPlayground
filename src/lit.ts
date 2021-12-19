@@ -1,6 +1,7 @@
 // import LitJsSdk from 'lit-js-sdk'
 import * as LitJsSdk from 'lit-js-sdk'
 import { TileDocument } from '@ceramicnetwork/stream-tile'
+import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 /**
  * This function encodes into base 64.
@@ -14,7 +15,7 @@ export function encodeb64(uintarray: any) {
   return b64
 }
 
-export function blobToBase64(blob: Blob) {
+function blobToBase64(blob: Blob) {
   return new Promise((resolve, _) => {
     const reader = new FileReader()
     reader.onloadend = () =>
@@ -34,43 +35,30 @@ export function decodeb64(b64String: any) {
   return new Uint8Array(Buffer.from(b64String, 'base64'))
 }
 
-// -----
-// -----
-// Encrypt and Write to Ceramic
-// -----
-export async function encryptAndWrite(auth: any[], stringToEncrypt: String) {
-  console.log('encrypt w/ Lit and write to ceramic, string: ', stringToEncrypt)
-  console.log('~~--------------------------------~~')
-  const encrypted = encryptWithLit(auth, stringToEncrypt)
-  console.log(encrypted)
-  // writeToCeramic(auth, encrypted)
-}
+// // -----
+// // -----
+// // Encrypt and Write to Ceramic
+// // -----
+// export async function encryptAndWrite(auth: any[], stringToEncrypt: String) {
+//   console.log('encrypt w/ Lit and write to ceramic, string: ', stringToEncrypt)
+//   console.log('~~--------------------------------~~')
+//   const encrypted = encryptWithLit(auth, stringToEncrypt)
+//   console.log(encrypted)
+//   // writeToCeramic(auth, encrypted)
+// }
 
-// -----
-// -----
-// Decrypt and Read
-// -----
-
-// -----
-// -----
-// Lit Encrypt / Decrypt
-// -----
-
-const encryptWithLit = async (
+export async function encryptWithLit(
   auth: any[],
   aStringThatYouWishToEncrypt: String
-): Promise<Array<any>> => {
-  // using eth here b/c fortmatic
+): Promise<Array<any>> {
   const chain = 'ethereum'
-  console.log('eth encryptions... ', auth)
-  console.log('secret to encrypt')
-  console.log(aStringThatYouWishToEncrypt)
   let authSign = await LitJsSdk.checkAndSignAuthMessage({
     chain: chain,
   })
   const { encryptedZip, symmetricKey } = await LitJsSdk.zipAndEncryptString(
     aStringThatYouWishToEncrypt
   )
+  console.log('use this for ACC softcoded: ', auth)
   const accessControlConditions = [
     {
       contractAddress: '0x20598860Da775F63ae75E1CD2cE0D462B8CEe4C7',
@@ -85,74 +73,57 @@ const encryptWithLit = async (
     },
   ]
 
-  // console.log('**********TESTING**********')
-  console.log('Conditions!  A.C.C. is ', accessControlConditions)
-  // console.log('symkey!  SymKey is ', symmetricKey)
-  console.log('Auth!  AuthSig is ', authSign)
-  // console.log('Chain!  chain is ', chain)
-  // console.log('Encrypted Zip!  EncryptedZip is ', encryptedZip)
+  const encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
+    accessControlConditions,
+    symmetricKey,
+    authSig: authSign,
+    chain,
+  })
 
-  console.log('TODO: It seems litNodeClient.saveEncryptionKey is malfunctioning')
-  console.log('Troubleshoot why, seems to be on SDK side?---------------')
-  // const encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
-  //   accessControlConditions,
-  //   symmetricKey,
-  //   authSign,
-  //   chain,
-  // })
+  const encryptedZipBase64 = await blobToBase64(encryptedZip)
+  const encryptedSymmetricKeyBase64 = encodeb64(encryptedSymmetricKey)
 
-  // encryptedSymmetricKey.then((value: any) => {
-  //   console.log('here!')
-  //   console.log('encrypt sym key!  encrypted sym key is ', value)
-  // })
+  return [encryptedZipBase64, encryptedSymmetricKeyBase64, accessControlConditions, chain]
+}
 
-  console.log('passing encryptedZip, symmetricKey for now---')
-  return [encryptedZip, symmetricKey]
+/**
+ * decrypt using the lit protocol
+ * @param {any} auth is the authentication passed via the persons wallet
+ * @param {Promise<String>} promise with the encrypted files and symmetric key
+ * @returns {Promise<string>} promise with the decrypted string
+ */
+
+export async function decryptWithLit(
+  encryptedZip: Uint8Array,
+  encryptedSymmKey: Uint8Array,
+  accessControlConditions: Array<any>,
+  chain: string
+): Promise<String> {
+  let authSig = await LitJsSdk.checkAndSignAuthMessage({
+    chain: chain,
+  })
+  // encrypted blob, sym key
+  console.log('encryptedSymKey', encryptedSymmKey)
+  const toDecrypt = uint8ArrayToString(encryptedSymmKey, 'base16')
+  console.log('toDecrypt', toDecrypt)
+  // decrypt the symmetric key
+  const decryptedSymmKey = await window.litNodeClient.getEncryptionKey({
+    accessControlConditions,
+    toDecrypt,
+    chain,
+    authSig,
+  })
+  console.log('decryptedSymKey', decryptedSymmKey)
+
+  // decrypt the files
+  const decryptedFiles = await LitJsSdk.decryptZip(new Blob([encryptedZip]), decryptedSymmKey)
+  const decryptedString = await decryptedFiles['string.txt'].async('text')
+  return decryptedString
 }
 
 // -----
 // -----
 // Ceramic
-// -----
-
-export async function writeToCeramic(auth: any[], encryptedString: String) {
-  if (auth) {
-    console.log('write ceramic.. ', auth)
-    const authReturn = auth
-    // const id = authReturn[0]
-    const ceramic = authReturn[1]
-
-    const doc = await TileDocument.create(
-      ceramic,
-      { foo: encryptedString },
-      {
-        // controllers: [concatId],
-        family: 'doc simpsonss family',
-      }
-    )
-    return doc.id.toString()
-  } else {
-    console.error('Failed to authenticate in ceramic read')
-    // updateAlert('danger', 'danger in reading of ceramic')
-    return 'whoopsies'
-  }
-
-  // return writeCeramic
-}
-// -----
-
-// -----
-
-// -----
-
-// ----- to be deleted below when doing scrap cleanup
-
-// -----
-
-// -----
-
-// -----
-
 // -----
 
 // -----

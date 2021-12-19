@@ -20,15 +20,17 @@ declare global {
 
 export async function createCeramic(): Promise<CeramicApi> {
   const ceramic = new Ceramic('https://ceramic-clay.3boxlabs.com')
+  console.log('creating... creating...')
   window.ceramic = ceramic
+  console.log(window.ceramic)
   window.TileDocument = TileDocument
   window.Caip10Link = Caip10Link
+
   return Promise.resolve(ceramic as CeramicApi)
 }
 
-// export async functino
-
 export async function authenticateCeramic(ceramicPromise: CeramicApi): Promise<Array<any>> {
+  console.log('authenticate Ceramic!')
   const [ceramic, provider, address] = await Promise.all([
     ceramicPromise,
     getProvider(),
