@@ -54,3 +54,32 @@ export async function authenticateCeramic(ceramicPromise: CeramicApi): Promise<A
   window.did = ceramic.did
   return Promise.resolve([idx.id, ceramic, address])
 }
+
+/**
+ * Write to Ceramic // TODO: FINISH PARAMS ETC
+ * @param {any} auth is the authentication passed via the persons wallet
+ * @param {Promise<String>} promise with the encrypted files and symmetric key
+ * @returns {Promise<string>} promise with the decrypted string
+ */
+export async function writeCeramic(auth: any[], toBeWritten: any[]): Promise<String> {
+  if (auth) {
+    const authReturn = auth
+    const ceramic = authReturn[1]
+    const toStore = {
+      encryptedZip: toBeWritten[0],
+      symKey: toBeWritten[1],
+      accessControlConditions: toBeWritten[2],
+      chain: toBeWritten[3],
+    }
+    console.log('storing to ceramic', toStore)
+
+    const doc = await TileDocument.create(ceramic, toStore, {
+      // controllers: [concatId],
+      family: 'doc family',
+    })
+    return doc.id.toString()
+  } else {
+    console.error('Failed to authenticate in ceramic read')
+    return 'whoopsies'
+  }
+}

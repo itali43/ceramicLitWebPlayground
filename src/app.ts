@@ -1,11 +1,6 @@
 import { DID } from 'dids'
-import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver'
-import KeyDidResolver from 'key-did-resolver'
 
-import { createCeramic, authenticateCeramic } from './ceramic'
-import { createIDX } from './idx'
-import { getProvider, getAddress } from './wallet'
-import type { ResolverRegistry } from 'did-resolver'
+import { createCeramic, authenticateCeramic, writeCeramic } from './ceramic'
 import { TileDocument } from '@ceramicnetwork/stream-tile'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
@@ -77,7 +72,7 @@ const encryptWithLit = async (
 
 /**
  * decrypt using the lit protocol
- * @param {any} auth is the authentication passed via the persons wallet and digested in bauth
+ * @param {any} auth is the authentication passed via the persons wallet
  * @param {Promise<String>} promise with the encrypted files and symmetric key
  * @returns {Promise<string>} promise with the decrypted string
  */
@@ -110,32 +105,30 @@ const decryptWithLit = async (
   return decryptedString
 }
 
-const writeCeramic = async (auth: any[], toBeWritten: any[]): Promise<String> => {
-  if (auth) {
-    const authReturn = auth
-    const ceramic = authReturn[1]
+// const writeCeramic = async (auth: any[], toBeWritten: any[]): Promise<String> => {
+//   if (auth) {
+//     const authReturn = auth
+//     const ceramic = authReturn[1]
 
-    const toStore = {
-      encryptedZip: toBeWritten[0],
-      symKey: toBeWritten[1],
-      accessControlConditions: toBeWritten[2],
-      chain: toBeWritten[3],
-    }
-    console.log('storing to ceramic', toStore)
+//     const toStore = {
+//       encryptedZip: toBeWritten[0],
+//       symKey: toBeWritten[1],
+//       accessControlConditions: toBeWritten[2],
+//       chain: toBeWritten[3],
+//     }
+//     console.log('storing to ceramic', toStore)
 
-    const doc = await TileDocument.create(ceramic, toStore, {
-      // controllers: [concatId],
-      family: 'doc family',
-    })
-    return doc.id.toString()
-  } else {
-    console.error('Failed to authenticate in ceramic read')
-    updateAlert('danger', 'danger in reading of ceramic')
-    return 'whoopsies'
-  }
-}
-
-const authenticate = authenticateCeramic(ceramicPromise)
+//     const doc = await TileDocument.create(ceramic, toStore, {
+//       // controllers: [concatId],
+//       family: 'doc family',
+//     })
+//     return doc.id.toString()
+//   } else {
+//     console.error('Failed to authenticate in ceramic read')
+//     updateAlert('danger', 'danger in reading of ceramic')
+//     return 'whoopsies'
+//   }
+// }
 
 const readCeramic = async (auth: any[], streamId: String): Promise<string> => {
   if (auth) {
@@ -230,32 +223,4 @@ document.getElementById('encryptLit')?.addEventListener('click', () => {
         console.log(itIsEncrypted)
       })
   })
-})
-
-// authentication
-document.getElementById('bauth')?.addEventListener('click', () => {
-  document.getElementById('loader')?.classList.remove('hide')
-  authenticate().then(
-    (authReturn) => {
-      const id = authReturn[0] as String
-      const userDid = document.getElementById('userDID')
-      const concatId = id.split('did:3:')[1]
-      if (userDid !== null) {
-        userDid.textContent = `${concatId.slice(0, 4)}...${concatId.slice(
-          concatId.length - 4,
-          concatId.length
-        )}`
-      }
-      updateAlert('success', `Connected with ${id}`)
-
-      document.getElementById('loader')?.classList.add('hide')
-      document.getElementById('bauth')?.classList.add('hide')
-      document.getElementById('instructions')?.classList.remove('hide')
-    },
-    (err) => {
-      console.error('Failed to authenticate:', err)
-      updateAlert('danger', err)
-      document.getElementById('loader')?.classList.add('hide')
-    }
-  )
 })
