@@ -1,7 +1,9 @@
 // import LitJsSdk from 'lit-js-sdk'
 import * as LitJsSdk from 'lit-js-sdk'
-import { TileDocument } from '@ceramicnetwork/stream-tile'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
+import { Integration } from '@litelliott/lit-ceramic-integration'
+
+let litCeramicIntegration = new Integration()
 
 /**
  * This function encodes into base 64.
@@ -10,7 +12,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
  * @returns {string} returns a string of b64
  */
 export function encodeb64(uintarray: any) {
-  console.log('encode to b64')
+  console.log('encode to b64~~~~~~~~~~~~~~~`')
   const b64 = Buffer.from(uintarray).toString('base64')
   return b64
 }
@@ -81,7 +83,9 @@ export async function encryptWithLit(
   })
 
   const encryptedZipBase64 = await blobToBase64(encryptedZip)
-  const encryptedSymmetricKeyBase64 = encodeb64(encryptedSymmetricKey)
+
+  console.log(litCeramicIntegration.hi())
+  const encryptedSymmetricKeyBase64 = litCeramicIntegration.encodeToB64(encryptedSymmetricKey)
 
   return [encryptedZipBase64, encryptedSymmetricKeyBase64, accessControlConditions, chain]
 }

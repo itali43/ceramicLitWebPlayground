@@ -4,18 +4,10 @@ import { decodeb64, decryptWithLit, encryptWithLit } from './lit'
 import { startLitClient } from './client'
 
 // To Do:
-// - Modulize
 // - Access Control Conditions should not be hardcoded
 // - IMPLEMENT DOCUMENTATION.JS! and start documenting
-// - Decryption bug
-// - Documentation + Blogpost
-// - Notes on good improvements that can be made
+// - Blogpost
 // - Allow for Lit Node (and Ceramic Node?) to be editable
-
-// Cleanup:
-// - clean up auth processes
-// - saveencrypt fix up
-// - clean up input/output
 
 declare global {
   interface Window {
