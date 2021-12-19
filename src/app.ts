@@ -1,6 +1,6 @@
 import { DID } from 'dids'
 
-import { createCeramic, authenticateCeramic, writeCeramic } from './ceramic'
+import { createCeramic, authenticateCeramic, writeCeramic, readCeramic } from './ceramic'
 import { TileDocument } from '@ceramicnetwork/stream-tile'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
@@ -103,44 +103,6 @@ const decryptWithLit = async (
   const decryptedFiles = await LitJsSdk.decryptZip(new Blob([encryptedZip]), decryptedSymmKey)
   const decryptedString = await decryptedFiles['string.txt'].async('text')
   return decryptedString
-}
-
-// const writeCeramic = async (auth: any[], toBeWritten: any[]): Promise<String> => {
-//   if (auth) {
-//     const authReturn = auth
-//     const ceramic = authReturn[1]
-
-//     const toStore = {
-//       encryptedZip: toBeWritten[0],
-//       symKey: toBeWritten[1],
-//       accessControlConditions: toBeWritten[2],
-//       chain: toBeWritten[3],
-//     }
-//     console.log('storing to ceramic', toStore)
-
-//     const doc = await TileDocument.create(ceramic, toStore, {
-//       // controllers: [concatId],
-//       family: 'doc family',
-//     })
-//     return doc.id.toString()
-//   } else {
-//     console.error('Failed to authenticate in ceramic read')
-//     updateAlert('danger', 'danger in reading of ceramic')
-//     return 'whoopsies'
-//   }
-// }
-
-const readCeramic = async (auth: any[], streamId: String): Promise<string> => {
-  if (auth) {
-    const authReturn = auth
-    const ceramic = authReturn[1]
-    const stream = await ceramic.loadStream(streamId)
-    return stream.content
-  } else {
-    console.error('Failed to authenticate in ceramic read')
-    updateAlert('danger', 'danger in reading of ceramic')
-    return 'error'
-  }
 }
 
 const updateAlert = (status: string, message: string) => {

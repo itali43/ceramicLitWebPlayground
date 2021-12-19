@@ -79,7 +79,19 @@ export async function writeCeramic(auth: any[], toBeWritten: any[]): Promise<Str
     })
     return doc.id.toString()
   } else {
-    console.error('Failed to authenticate in ceramic read')
-    return 'whoopsies'
+    console.error('Failed to authenticate in ceramic WRITE')
+    return 'error'
+  }
+}
+
+export async function readCeramic(auth: any[], streamId: String): Promise<string> {
+  if (auth) {
+    const authReturn = auth
+    const ceramic = authReturn[1]
+    const stream = await ceramic.loadStream(streamId)
+    return stream.content
+  } else {
+    console.error('Failed to authenticate in ceramic READ')
+    return 'error'
   }
 }
