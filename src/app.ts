@@ -2,7 +2,7 @@ import { DID } from 'dids'
 import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver'
 import KeyDidResolver from 'key-did-resolver'
 
-import { createCeramic } from './ceramic'
+import { createCeramic, authenticateCeramic } from './ceramic'
 import { createIDX } from './idx'
 import { getProvider, getAddress } from './wallet'
 import type { ResolverRegistry } from 'did-resolver'
@@ -11,6 +11,7 @@ import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 
 import * as LitJsSdk from 'lit-js-sdk'
 import { encodeb64, decodeb64, blobToBase64 } from './lit'
+import { startLitClient } from './client'
 
 // To Do:
 // - Modulize
@@ -134,33 +135,7 @@ const writeCeramic = async (auth: any[], toBeWritten: any[]): Promise<String> =>
   }
 }
 
-const authenticate = async (): Promise<Array<any>> => {
-  const [ceramic, provider, address] = await Promise.all([
-    ceramicPromise,
-    getProvider(),
-    getAddress(),
-  ])
-
-  console.log('get address: ', address)
-
-  const keyDidResolver = KeyDidResolver.getResolver()
-  const threeIdResolver = ThreeIdResolver.getResolver(ceramic)
-  const resolverRegistry: ResolverRegistry = {
-    ...threeIdResolver,
-    ...keyDidResolver,
-  }
-  const did = new DID({
-    provider: provider,
-    resolver: resolverRegistry,
-  })
-
-  updateAlert('success', `Successfully connected to wallet`)
-  await did.authenticate()
-  await ceramic.setDID(did)
-  const idx = createIDX(ceramic)
-  window.did = ceramic.did
-  return [idx.id, ceramic, address]
-}
+const authenticate = authenticateCeramic(ceramicPromise)
 
 const readCeramic = async (auth: any[], streamId: String): Promise<string> => {
   if (auth) {
@@ -189,15 +164,12 @@ const updateAlert = (status: string, message: string) => {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  // load lit client upon page load
-  console.log('Connecting to Lit Node...')
-  const client = new LitJsSdk.LitNodeClient()
-  client.connect()
-  window.litNodeClient = client
+  console.log('DOMContent.........')
+  startLitClient()
 })
 
 document.getElementById('readCeramic')?.addEventListener('click', () => {
-  authenticate()
+  authenticateCeramic(ceramicPromise)
     .then((authReturn) => {
       if (streamID === '') {
         console.log(streamID)
@@ -237,24 +209,12 @@ document.getElementById('readCeramic')?.addEventListener('click', () => {
 
 // encrypt with Lit and write to ceramic
 document.getElementById('encryptLit')?.addEventListener('click', () => {
-  authenticate().then((authReturn) => {
+  authenticateCeramic(ceramicPromise).then((authReturn) => {
     // get secret that is to be encrypted
     // @ts-ignore
     const stringToEncrypt = document.getElementById('secret').value
 
     encryptWithLit(authReturn, stringToEncrypt)
-      // .then(function (response) {
-      //   // confirm encryption with lit was a success
-      //   updateAlert('success', `Successfully Encrypted`)
-      //   return response
-      // })
-      // .then(function (zipAndSymKey) {
-      //   // encode zip and sym key to prepare for writing to ceramic
-      //   // return value is [encryptedZipBase64, encryptedSymmetricKey]
-      //   const enZip = encoded(zipAndSymKey[0])
-      //   const enSymKey = encoded(zipAndSymKey[1])
-      //   return [enZip, enSymKey]
-      // })
       .then((zipAndSymKeyN64) => {
         updateAlert('success', `Successfully Encrypted`)
         // write encoded data to ceramic

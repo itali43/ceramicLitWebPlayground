@@ -2,11 +2,6 @@
 import * as LitJsSdk from 'lit-js-sdk'
 import { TileDocument } from '@ceramicnetwork/stream-tile'
 
-export async function say_hi(hi: String) {
-  console.log(hi)
-}
-//var blob = new Blob(['Welcome to <b>base64.guru</b>!'], {type: 'text/html'});
-
 /**
  * This function encodes into base 64.
  * it's useful for storing symkeys and files in ceramic
