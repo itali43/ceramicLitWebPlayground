@@ -5,10 +5,8 @@ import { TileDocument } from '@ceramicnetwork/stream-tile'
 import { DID } from 'dids'
 import ThreeIdResolver from '@ceramicnetwork/3id-did-resolver'
 import KeyDidResolver from 'key-did-resolver'
-import { createCeramic } from './ceramic'
 import { createIDX } from './idx'
 import { getProvider, getAddress } from './wallet'
-import type { CeramicApi } from '@ceramicnetwork/common'
 import { ResolverRegistry } from 'did-resolver'
 
 declare global {
@@ -29,13 +27,13 @@ export async function createCeramic(): Promise<CeramicApi> {
   return Promise.resolve(ceramic as CeramicApi)
 }
 
-export async function authenticateCeramic(ceramicPromise: CeramicApi): Promise<Array<any>> {
-  console.log('authenticate Ceramic!')
-  const [ceramic, provider, address] = await Promise.all([
-    ceramicPromise,
-    getProvider(),
-    getAddress(),
-  ])
+export async function authenticateCeramic(
+  ceramicPromise: Promise<CeramicApi>
+): Promise<Array<any>> {
+  console.log('authenticate Ceramic!@')
+
+  const provider = await getProvider()
+  const [ceramic, address] = await Promise.all([ceramicPromise, getAddress()])
 
   console.log('get address: ', address)
 

@@ -883,6 +883,11 @@
   resolved "https://registry.yarnpkg.com/@iarna/toml/-/toml-2.2.5.tgz#b32366c89b43c6f8cefbdefac778b9c828e3ba8c"
   integrity sha512-trnsAYxU3xnS1gPHPyU961coFyLkh4gAD/0zQ5mymY4yOZ+CYvsPqUbOFSw0aDM4y0tV7tiFxL/1XfXPNC6IPg==
 
+"@litelliott/lit-ceramic-integration@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@litelliott/lit-ceramic-integration/-/lit-ceramic-integration-1.0.0.tgz#6f58abfe2840452a8da9b84ed91739ebb0bf05c4"
+  integrity sha512-V2IuIhM6KcxY0NYClmNKKLS8l0Z6CLfzLYMLUh3vhFZAuhEKxoY6GiuHOdUFHpt35uLenNlftqek8XNzM7jm0w==
+
 "@metamask/detect-provider@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@metamask/detect-provider/-/detect-provider-1.2.0.tgz#3667a7531f2a682e3c3a43eaf3a1958bdb42a696"

@@ -1,6 +1,6 @@
 import { DID } from 'dids'
 import { createCeramic, authenticateCeramic, writeCeramic, readCeramic } from './ceramic'
-import { encodeb64, decodeb64, decryptWithLit, encryptWithLit } from './lit'
+import { decodeb64, decryptWithLit, encryptWithLit } from './lit'
 import { startLitClient } from './client'
 
 // To Do:
