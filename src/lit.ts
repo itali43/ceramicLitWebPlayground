@@ -2,6 +2,7 @@
 import * as LitJsSdk from 'lit-js-sdk'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
 import { Integration } from '@litelliott/lit-ceramic-integration'
+import { getAddress } from './wallet'
 
 let litCeramicIntegration = new Integration()
 
@@ -37,35 +38,31 @@ export function decodeb64(b64String: any) {
   return new Uint8Array(Buffer.from(b64String, 'base64'))
 }
 
-// // -----
-// // -----
-// // Encrypt and Write to Ceramic
-// // -----
-// export async function encryptAndWrite(auth: any[], stringToEncrypt: String) {
-//   console.log('encrypt w/ Lit and write to ceramic, string: ', stringToEncrypt)
-//   console.log('~~--------------------------------~~')
-//   const encrypted = encryptWithLit(auth, stringToEncrypt)
-//   console.log(encrypted)
-//   // writeToCeramic(auth, encrypted)
-// }
-
+/**
+ * encrypts a message with Lit returns required details
+ * this obfuscates data such that it can be stored on ceramic without
+ * non-permissioned eyes seeing what the data is
+ * @param {blob} auth authentication from wallet
+ * @param {String} aStringThatYouWishToEncrypt the clear text you'd like encrypted
+ * @returns {Promise<Array<any>>} returns, in this order: encryptedZipBase64, encryptedSymmetricKeyBase64, accessControlConditions, chain
+ */
 export async function encryptWithLit(
   auth: any[],
   aStringThatYouWishToEncrypt: String
 ): Promise<Array<any>> {
   const chain = 'ethereum'
-  let authSign = await LitJsSdk.checkAndSignAuthMessage({
+  let authSig = await LitJsSdk.checkAndSignAuthMessage({
     chain: chain,
   })
   const { encryptedZip, symmetricKey } = await LitJsSdk.zipAndEncryptString(
     aStringThatYouWishToEncrypt
   )
-  console.log('use this for ACC softcoded: ', auth)
+
   const accessControlConditions = [
     {
-      contractAddress: '0x20598860Da775F63ae75E1CD2cE0D462B8CEe4C7',
+      contractAddress: auth[2],
       standardContractType: '',
-      chain: 'ethereum',
+      chain: chain,
       method: 'eth_getBalance',
       parameters: [':userAddress', 'latest'],
       returnValueTest: {
@@ -78,13 +75,12 @@ export async function encryptWithLit(
   const encryptedSymmetricKey = await window.litNodeClient.saveEncryptionKey({
     accessControlConditions,
     symmetricKey,
-    authSig: authSign,
+    authSig: authSig,
     chain,
   })
 
   const encryptedZipBase64 = await blobToBase64(encryptedZip)
-
-  console.log(litCeramicIntegration.hi())
+  console.log('--cleanup of module when it is time, right below--')
   const encryptedSymmetricKeyBase64 = litCeramicIntegration.encodeToB64(encryptedSymmetricKey)
 
   return [encryptedZipBase64, encryptedSymmetricKeyBase64, accessControlConditions, chain]
@@ -123,61 +119,4 @@ export async function decryptWithLit(
   const decryptedFiles = await LitJsSdk.decryptZip(new Blob([encryptedZip]), decryptedSymmKey)
   const decryptedString = await decryptedFiles['string.txt'].async('text')
   return decryptedString
-}
-
-// -----
-// -----
-// Ceramic
-// -----
-
-// -----
-
-// -----
-
-// -----
-
-// -----
-
-// -----
-
-// -----
-
-// -----
-
-export async function encrypt_string() {
-  // using eth here b/c fortmatic
-  const chain = 'ethereum'
-  console.log('eth encryptions ')
-  const aStringThatYouWishToEncrypt = 'this is my secret, hold if for me please'
-  let authSign = await LitJsSdk.checkAndSignAuthMessage({
-    chain: chain,
-  })
-  const { encryptedZip, symmetricKey } = await LitJsSdk.zipAndEncryptString(
-    aStringThatYouWishToEncrypt
-  )
-
-  const accessControlConditions = [
-    {
-      contractAddress: '0x20598860Da775F63ae75E1CD2cE0D462B8CEe4C7',
-      standardContractType: '',
-      chain: 'ethereum',
-      method: 'eth_getBalance',
-      parameters: [':userAddress', 'latest'],
-      returnValueTest: {
-        comparator: '>=',
-        value: '10000000000000',
-      },
-    },
-  ]
-
-  //   const { txHash, tokenId, tokenAddress, mintingAddress, authSign } = await LitJsSdk.mintLIT({
-  //     chain: window.chain,
-  //     quantity: 1,
-  //   })
-
-  //   console.log('Success!  Tx hash is ', txHash)
-  console.log('Success!  A.C.C. is ', accessControlConditions)
-  console.log('Success!  EncryptedZip is ', encryptedZip)
-  console.log('Success!  SymKey is ', symmetricKey)
-  console.log('Auth!  AuthSig is ', authSign)
 }

@@ -56,23 +56,21 @@ export async function authenticateCeramic(
 }
 
 /**
- * Write to Ceramic // TODO: FINISH PARAMS ETC
- * @param {any} auth is the authentication passed via the persons wallet
- * @param {Promise<String>} promise with the encrypted files and symmetric key
- * @returns {Promise<string>} promise with the decrypted string
+ * Write to Ceramic.  This function takes in an auth and what one would
+ * like written and then sends it to a ceramic node in the proper format
+ * @param {any[]} auth is the authentication passed via the persons wallet
+ * @param {any[]} array of encrypted key, symkey, accessControlConditions, and chain
+ * @returns {Promise<string>} promise with the ceramic streamID, can be used to look up data
  */
 export async function writeCeramic(auth: any[], toBeWritten: any[]): Promise<String> {
   if (auth) {
-    const authReturn = auth
-    const ceramic = authReturn[1]
+    const ceramic = auth[1]
     const toStore = {
       encryptedZip: toBeWritten[0],
       symKey: toBeWritten[1],
       accessControlConditions: toBeWritten[2],
       chain: toBeWritten[3],
     }
-    console.log('storing to ceramic', toStore)
-
     const doc = await TileDocument.create(ceramic, toStore, {
       // controllers: [concatId],
       family: 'doc family',
@@ -86,8 +84,7 @@ export async function writeCeramic(auth: any[], toBeWritten: any[]): Promise<Str
 
 export async function readCeramic(auth: any[], streamId: String): Promise<string> {
   if (auth) {
-    const authReturn = auth
-    const ceramic = authReturn[1]
+    const ceramic = auth[1]
     const stream = await ceramic.loadStream(streamId)
     return stream.content
   } else {
