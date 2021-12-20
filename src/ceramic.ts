@@ -34,9 +34,6 @@ export async function authenticateCeramic(
 
   const provider = await getProvider()
   const [ceramic, address] = await Promise.all([ceramicPromise, getAddress()])
-
-  console.log('get address: ', address)
-
   const keyDidResolver = KeyDidResolver.getResolver()
   const threeIdResolver = ThreeIdResolver.getResolver(ceramic)
   const resolverRegistry: ResolverRegistry = {
