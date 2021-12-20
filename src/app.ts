@@ -35,7 +35,6 @@ let streamID = 'kjzl6cwe1jw148rh8j6jkmg34ndeqtfexbdhglald95gn7xm7iflsjb815nhx7c'
 
 document.addEventListener('DOMContentLoaded', function () {
   console.log('DOMContent.........')
-  console.log(litCeramicIntegration.welcome('elliott'))
   litCeramicIntegration.startLitClient(window)
 })
 
