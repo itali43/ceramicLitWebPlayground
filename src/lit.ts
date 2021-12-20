@@ -1,10 +1,7 @@
 // import LitJsSdk from 'lit-js-sdk'
 import * as LitJsSdk from 'lit-js-sdk'
 import { toString as uint8ArrayToString } from 'uint8arrays/to-string'
-import { Integration } from '@litelliott/lit-ceramic-integration'
-import { getAddress } from './wallet'
-
-let litCeramicIntegration = new Integration()
+// import { getAddress } from './wallet'
 
 /**
  * This function encodes into base 64.
@@ -81,7 +78,7 @@ export async function encryptWithLit(
 
   const encryptedZipBase64 = await blobToBase64(encryptedZip)
   console.log('--cleanup of module when it is time, right below--')
-  const encryptedSymmetricKeyBase64 = litCeramicIntegration.encodeToB64(encryptedSymmetricKey)
+  const encryptedSymmetricKeyBase64 = encodeb64(encryptedSymmetricKey)
 
   return [encryptedZipBase64, encryptedSymmetricKeyBase64, accessControlConditions, chain]
 }
