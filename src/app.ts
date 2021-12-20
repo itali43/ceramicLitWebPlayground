@@ -18,7 +18,7 @@ declare global {
 let litCeramicIntegration = new Integration()
 
 // const ceramicPromise = litCeramicIntegration._createCeramic()
-let streamID = 'kjzl6cwe1jw148rh8j6jkmg34ndeqtfexbdhglald95gn7xm7iflsjb815nhx7c' // dummy data
+let streamID = 'kjzl6cwe1jw1479rnblkk5u43ivxkuo29i4efdx1e7hk94qrhjl0d4u0dyys1au' // test data
 
 // const updateAlert = (status: string, message: string) => {
 //   const alert = document.getElementById('alerts')
