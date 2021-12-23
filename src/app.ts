@@ -44,10 +44,11 @@ document.getElementById('encryptLit')?.addEventListener('click', function () {
   // @ts-ignore
   const stringToEncrypt = document.getElementById('secret').value
   console.log('hold on, its coming')
-  const result = litCeramicIntegration.encryptAndWrite(stringToEncrypt)
-  console.log('ok here it is?')
-  // @ts-ignore
-  document.getElementById('stream').innerText = result
-
-  console.log(result)
+  const response = litCeramicIntegration.ewAsync(stringToEncrypt).then(
+    (value) =>
+      // @ts-ignore
+      (document.getElementById('stream').innerText = value)
+  )
+  //.encryptAndWrite(stringToEncrypt)
+  console.log('ok here it is?', response)
 })
