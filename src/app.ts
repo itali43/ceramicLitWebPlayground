@@ -1,17 +1,5 @@
 import { DID } from 'dids'
-// import { authenticateCeramic, writeCeramic, readCeramic } from './ceramic'
-// import { decodeb64, decryptWithLit, encryptWithLit } from './lit'
 import { Integration } from '@litelliott/lit-ceramic-integration'
-
-// To Do:
-// - further implement DOCUMENTATION.JS! re-run over documentation
-// - Finalize Readme
-// - swap/copy over to the LIT repo
-// - Blogpost
-
-// Soon:
-// - Allow for Lit Node (and Ceramic Node) to be editable
-// - Port over and clean up learnings scattered among older MD docs
 
 declare global {
   interface Window {

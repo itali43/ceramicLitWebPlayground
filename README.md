@@ -10,7 +10,17 @@ But normally I just run `yarn parcel index.html`, I don't think the webpack buil
 
 That should get things running, even though I still have some `/dist` files the html is set up to connect to the `/src`.
 
-# --------------------------------------------------------------------------
+# To Do:
+
+- further implement DOCUMENTATION.JS! re-run over documentation
+- Finalize Readme
+- swap/copy over to the LIT repo
+- Blogpost
+
+## Soon:
+
+- Allow for Lit Node (and Ceramic Node) to be editable
+- Port over and clean up learnings scattered among older MD docs
 
 ## [Ceramic Web Playground](https://ceramicstudio.github.io/web-playground/)
 
