@@ -12,9 +12,10 @@ That should get things running, even though I still have some `/dist` files the 
 
 # To Do:
 
-- further implement DOCUMENTATION.JS! re-run over documentation
+- further implement DOCUMENTATION.JS, re-run over documentation
 - Finalize Readme
-- swap/copy over to the LIT repo
+- clean up promise code
+- swap/copy over to the LIT company owned repo
 - Blogpost
 
 ## Soon:
